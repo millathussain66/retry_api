@@ -1,8 +1,4 @@
 <x-app-layout>
-
-
-
-    
     <script>
         $(document).ready(function() {
             $('#myApiCallButton').click(function() {
@@ -24,8 +20,7 @@
 
                     },
                     error: function(xhr, status, error) {
-                        // alert('An error occurred while making API calls.');
-                    //    window.location.reload();
+                       window.location.reload();
                     },
                     complete: function() {
                         Swal.fire({
@@ -35,12 +30,99 @@
                             position: 'top-end',
                         });
                         $('#loadingSpinner').hide();
-                        // window.location.reload();
+                        window.location.reload();
                     }
                 });
             });
+           loadQueue();
+           setInterval(loadQueue, 5000);
         });
+
+        function loadQueue() {
+            $.ajax({
+                url: '{{ route("api.retry-queue.tbody") }}',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    let html = '';
+                    let sl = 1;
+
+                    const colors = [
+                        'bg-blue-50','bg-green-50','bg-purple-50',
+                        'bg-yellow-50','bg-pink-50','bg-indigo-50'
+                    ];
+
+                    let groupIndex = 0;
+
+                    $.each(data, function (candidateId, group) {
+
+                        const bgClass = colors[groupIndex % colors.length];
+                        const typeLabel = groupIndex === 0
+                            ? 'Applicant'
+                            : 'Supplementary ' + groupIndex;
+
+                        $.each(group, function (index, record) {
+
+                            html += `<tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium">#${sl++}</td>`;
+
+                            if (index === 0) {
+                                html += `
+                                <td class="px-6 py-4 font-medium align-top ${bgClass}" rowspan="${group.length}">
+                                    <div class="text-sm font-semibold text-indigo-700">${typeLabel}</div>
+                                    <div class="text-xs text-gray-500 mt-1">ID: ${candidateId}</div>
+                                </td>`;
+                            }
+
+                            html += `
+                                <td class="px-6 py-4">
+                                    <div class="font-medium">${record.api_name}</div>
+                                    <div class="text-xs text-gray-500">ID: ${record.api_id}</div>
+                                </td>
+
+                                <td class="px-6 py-4 font-medium">${record.file_sl_no}</td>
+
+                                <td class="px-6 py-4">
+                                    <div class="text-sm">${formatTime(record.created_at)}</div>
+                                    <div class="text-xs text-gray-500">${formatDate(record.created_at)}</div>
+                                </td>
+
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full
+                                        ${record.success_status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                        ${record.success_status ? '✓ Success' : '✗ Failed'}
+                                    </span>
+                                </td>
+                            </tr>`;
+                        });
+
+                        groupIndex++;
+                    });
+
+                    $('#queueTbody').html(
+                        html || `<tr><td colspan="6" class="py-8 text-center text-gray-500">🚫 No queue data found</td></tr>`
+                    );
+                },
+                error: function () {
+                    $('#queueTbody').html(
+                        `<tr><td colspan="6" class="py-8 text-center text-red-500">⚠️ Failed to load data</td></tr>`
+                    );
+                }
+            });
+        }
+
+        function formatTime(date) {
+            return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString();
+        }
     </script>
+    
+
+
+
 
 <div class="w-full px-4 py-6 bg-gray-50 min-h-screen">
     <div class="max-w-[1800px] mx-auto">
@@ -80,24 +162,7 @@
                     </div>
                 </div>
 
-                @php
-                    $records = DB::table('retry_api_queue')
-                        ->orderBy('id', 'ASC')
-                        ->limit(50)
-                        ->get()
-                        ->groupBy('candidate_info_id');
-                @endphp
-                @php $sl = 1; @endphp
-                @php
-                    $groupColors = [
-                        'bg-blue-50',
-                        'bg-green-50',
-                        'bg-purple-50',
-                        'bg-yellow-50',
-                        'bg-pink-50',
-                        'bg-indigo-50',
-                    ];
-                @endphp
+      
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
@@ -111,84 +176,18 @@
                                 <th class="px-6 py-3 text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @forelse ($records as $candidateId => $group)
-                          
-
-                            @php
-                                $groupIndex = $loop->index;
-                                $typeLabel = $groupIndex === 0
-                                    ? 'Applicant'
-                                    : 'Supplementary ' . $groupIndex;
-
-                                $bgClass = $groupColors[$groupIndex % count($groupColors)];
-                            @endphp
-
-                                @foreach ($group as $index => $record)
-                                    <tr class="hover:bg-gray-50 transition">
-
-                                        {{-- SL --}}
-                                        <td class="px-6 py-4 font-medium">
-                                            #{{ $sl++ }}
-                                        </td>
-
-                                        {{-- Candidate (rowspan) --}}
-                         @if ($index === 0)
-                            <td class="px-6 py-4 font-medium align-top {{ $bgClass }}"
-                                rowspan="{{ $group->count() }}">
-
-                                <div class="text-sm font-semibold text-indigo-700">
-                                    {{ $typeLabel }}
-                                </div>
-
-                                <div class="text-xs text-gray-500 mt-1">
-                                    ID: {{ $candidateId }}
-                                </div>
-
+                     <tbody id="queueTbody" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-gray-500">
+                                ⏳ Loading...
                             </td>
-                        @endif
+                        </tr>
+                    </tbody>
 
-
-
-                                        {{-- API --}}
-                                        <td class="px-6 py-4">
-                                            <div class="font-medium">{{ $record->api_name }}</div>
-                                            <div class="text-xs text-gray-500">ID: {{ $record->api_id }}</div>
-                                        </td>
-
-                                        {{-- File --}}
-                                        <td class="px-6 py-4 font-medium">{{ $record->file_sl_no }}</td>
-
-                                        {{-- Time --}}
-                                        <td class="px-6 py-4">
-                                            <div class="text-sm">
-                                                {{ \Carbon\Carbon::parse($record->created_at)->format('h:i A') }}
-                                            </div>
-                                            <div class="text-xs text-gray-500">
-                                                {{ \Carbon\Carbon::parse($record->created_at)->format('d/m/Y') }}
-                                            </div>
-                                        </td>
-
-                                        {{-- Status --}}
-                                        <td class="px-6 py-4 text-center">
-                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full
-                                                {{ $record->success_status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                                {{ $record->success_status ? '✓ Success' : '✗ Failed' }}
-                                            </span>
-                                        </td>
-
-                                    </tr>
-                                @endforeach
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="py-8 text-center text-gray-500">
-                                        🚫 No queue data found
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
                     </table>
                 </div>
+
+
             </div>
 
          

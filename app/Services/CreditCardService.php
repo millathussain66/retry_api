@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Hash;
 
 class CreditCardService
@@ -325,6 +326,9 @@ class CreditCardService
     public static function _processN2B($file_info_id, $result)
     {
 
+        // throw new Exceptions("API failed: Missing customer/card information");
+
+
         $proceedOne = CreditCardService::beforeCallApi(2, $result['applicant']->lead_id, $result['applicant']->file_info_id, $result['applicant']->candidate_info_id);
 
         // beforeCallApi($apiId, $leadId, $fileInfoId, $candidateInfoId)
@@ -354,10 +358,7 @@ class CreditCardService
         $accountNumber      = $responseDataTwo['accountNumber'] ?? '';
 
         if (empty($customerId) || empty($customerContractNo) || empty($customerCardNo)) {
-            return [
-                'status' => 0,
-                'message' => 'API Faied'
-            ];
+            throw new Exceptions("API failed: Missing customer/card information");
         } else {
 
             $proceedThree = CreditCardService::beforeCallApi(3, $result['applicant']->lead_id, $result['applicant']->file_info_id, $result['applicant']->candidate_info_id);

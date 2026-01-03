@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/createCreditCard', [CreditCardController::class, 'createCreditCard'])->name('api.createCreditCard');
+    Route::get('/retry-queue/tbody', [CreditCardController::class, 'tbody'])->name('api.retry-queue.tbody');
 });
 
 require __DIR__ . '/auth.php';
