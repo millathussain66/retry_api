@@ -25,7 +25,7 @@
                     },
                     error: function(xhr, status, error) {
                         // alert('An error occurred while making API calls.');
-                        window.location.reload();
+                    //    window.location.reload();
                     },
                     complete: function() {
                         Swal.fire({
@@ -35,13 +35,9 @@
                             position: 'top-end',
                         });
                         $('#loadingSpinner').hide();
+                        // window.location.reload();
                     }
                 });
-               
-
-
-
-
             });
         });
     </script>
@@ -84,48 +80,108 @@
                     </div>
                 </div>
 
+                @php
+                    $records = DB::table('retry_api_queue')
+                        ->orderBy('id', 'ASC')
+                        ->limit(50)
+                        ->get()
+                        ->groupBy('candidate_info_id');
+                @endphp
+                @php $sl = 1; @endphp
+                @php
+                    $groupColors = [
+                        'bg-blue-50',
+                        'bg-green-50',
+                        'bg-purple-50',
+                        'bg-yellow-50',
+                        'bg-pink-50',
+                        'bg-indigo-50',
+                    ];
+                @endphp
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-gray-50">
                             <tr class="text-xs uppercase text-gray-500">
                                 <th class="px-6 py-3">SL</th>
+                                <th class="px-6 py-3">Candidate</th>
                                 <th class="px-6 py-3">API</th>
                                 <th class="px-6 py-3">File No</th>
                                 <th class="px-6 py-3">Time</th>
                                 <th class="px-6 py-3 text-center">Status</th>
                             </tr>
                         </thead>
-
                         <tbody class="divide-y divide-gray-200">
-                            @forelse (DB::table('retry_api_queue')->orderBy('id','ASC')->limit(10)->get() as $index => $record)
-                                <tr class="hover:bg-gray-50 transition">
-                                    <td class="px-6 py-4 font-medium">#{{ $index + 1 }}</td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium">{{ $record->api_name }}</div>
-                                        <div class="text-xs text-gray-500">ID: {{ $record->api_id }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 font-medium">{{ $record->file_sl_no }}</td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm">{{ \Carbon\Carbon::parse($record->created_at)->format('h:i A') }}</div>
-                                        <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($record->created_at)->format('d/m/Y') }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex flex-col items-center">
-                                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full mb-1
-                                                {{ $record->success_status
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-red-100 text-red-700' }}">
+                            @forelse ($records as $candidateId => $group)
+                          
+
+                            @php
+                                $groupIndex = $loop->index;
+                                $typeLabel = $groupIndex === 0
+                                    ? 'Applicant'
+                                    : 'Supplementary ' . $groupIndex;
+
+                                $bgClass = $groupColors[$groupIndex % count($groupColors)];
+                            @endphp
+
+                                @foreach ($group as $index => $record)
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        {{-- SL --}}
+                                        <td class="px-6 py-4 font-medium">
+                                            #{{ $sl++ }}
+                                        </td>
+
+                                        {{-- Candidate (rowspan) --}}
+                         @if ($index === 0)
+                            <td class="px-6 py-4 font-medium align-top {{ $bgClass }}"
+                                rowspan="{{ $group->count() }}">
+
+                                <div class="text-sm font-semibold text-indigo-700">
+                                    {{ $typeLabel }}
+                                </div>
+
+                                <div class="text-xs text-gray-500 mt-1">
+                                    ID: {{ $candidateId }}
+                                </div>
+
+                            </td>
+                        @endif
+
+
+
+                                        {{-- API --}}
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium">{{ $record->api_name }}</div>
+                                            <div class="text-xs text-gray-500">ID: {{ $record->api_id }}</div>
+                                        </td>
+
+                                        {{-- File --}}
+                                        <td class="px-6 py-4 font-medium">{{ $record->file_sl_no }}</td>
+
+                                        {{-- Time --}}
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm">
+                                                {{ \Carbon\Carbon::parse($record->created_at)->format('h:i A') }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ \Carbon\Carbon::parse($record->created_at)->format('d/m/Y') }}
+                                            </div>
+                                        </td>
+
+                                        {{-- Status --}}
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full
+                                                {{ $record->success_status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                                 {{ $record->success_status ? '✓ Success' : '✗ Failed' }}
                                             </span>
-                                            @if($record->success_status)
-                                                <span class="text-xs text-gray-500">File: {{ $record->file_sl_no }}</span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+
+                                    </tr>
+                                @endforeach
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-8 text-center text-gray-500">
+                                    <td colspan="6" class="py-8 text-center text-gray-500">
                                         🚫 No queue data found
                                     </td>
                                 </tr>
@@ -144,7 +200,7 @@
 
 
                 
-                <div class="overflow-x-auto max-h-[500px]">
+                <div class="overflow-x-auto max-h-[800px]">
                     <table class="min-w-full text-sm">
                         <thead class="sticky top-0 bg-gray-50">
                             <tr class="text-xs uppercase text-gray-500">

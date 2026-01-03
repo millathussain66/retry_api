@@ -11,8 +11,6 @@ class CreditCardController extends Controller
 {
     public function createCreditCard(Request $request)
     {
-
-
         $result = CreditCardService::prepareCardAPIData($request->file_info_id);
 
         if (empty($result['applicant']->customer_id_cms)) {
@@ -61,26 +59,11 @@ class CreditCardController extends Controller
                     $responseDataTwo = CreditCardService::_processE2B($request->file_info_id, $result);
                 }
             }
+            $responseDataTwo = CreditCardService::_processN2B($request->file_info_id, $result);
+        }else{
+            // Directly process N2B
+            $responseDataTwo = CreditCardService::_processN2B($request->file_info_id, $result);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         // dispatch(new CreditCardJob((object)$request->all()));
