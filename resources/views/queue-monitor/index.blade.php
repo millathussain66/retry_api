@@ -369,16 +369,7 @@
                                             >
                                                 Failed Jobs
                                             </h2>
-                                            <div class="flex items-center mt-1">
-                                                <span
-                                                    class="text-sm text-gray-600"
-                                                    >Total failed jobs:</span
-                                                >
-                                                <span
-                                                    class="ml-2 bg-red-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full"
-                                                    x-text="failedJobs.length"
-                                                ></span>
-                                            </div>
+                                          
                                         </div>
                                     </div>
 
@@ -422,128 +413,10 @@
                                     >
                                         No failed jobs
                                     </h3>
-                                    <p class="text-gray-500 max-w-sm mx-auto">
-                                        All jobs are running smoothly. Check
-                                        back later if you encounter any issues.
-                                    </p>
+                                    
                                 </div>
 
-                                <template
-                                    x-for="job in failedJobs"
-                                    :key="job.id"
-                                >
-                                    <div
-                                        class="mb-3 p-4 bg-gradient-to-r from-red-50 to-white border border-red-100 rounded-xl hover:border-red-200 transition-colors duration-200 shadow-sm hover:shadow-md"
-                                    >
-                                        <div
-                                            class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
-                                        >
-                                            <div class="flex-1 min-w-0">
-                                                <div
-                                                    class="flex flex-wrap items-center gap-2 mb-3"
-                                                >
-                                                    <span
-                                                        class="font-semibold text-gray-900 truncate"
-                                                        x-text="job.payload?.displayName || 'Unknown Job'"
-                                                    ></span>
-                                                    <span
-                                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200"
-                                                    >
-                                                        <i
-                                                            class="fas fa-layer-group mr-1.5 text-xs"
-                                                        ></i>
-                                                        <span
-                                                            x-text="job.queue || 'default'"
-                                                        ></span>
-                                                    </span>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <div
-                                                        class="flex items-center text-xs text-gray-500 mb-1"
-                                                    >
-                                                        <i
-                                                            class="fas fa-exclamation-triangle mr-1.5 text-red-400"
-                                                        ></i>
-                                                        <span
-                                                            class="font-medium"
-                                                            >Error
-                                                            Message:</span
-                                                        >
-                                                    </div>
-                                                    <div
-                                                        class="bg-red-50 border border-red-100 rounded-lg p-3"
-                                                    >
-                                                        <p
-                                                            class="text-sm font-mono text-red-700 break-words"
-                                                            x-text="job.exception?.substring(0, 150) + (job.exception?.length > 150 ? '...' : '')"
-                                                        ></p>
-                                                    </div>
-                                                </div>
-
-                                                <div
-                                                    class="flex flex-wrap items-center gap-4 text-xs text-gray-600"
-                                                >
-                                                    <div
-                                                        class="flex items-center"
-                                                    >
-                                                        <i
-                                                            class="fas fa-clock mr-1.5 text-gray-400"
-                                                        ></i>
-                                                        <span>Failed: </span>
-                                                        <span
-                                                            class="ml-1 font-medium"
-                                                            x-text="formatDate(job.failed_at)"
-                                                        ></span>
-                                                    </div>
-                                                    <div
-                                                        class="flex items-center"
-                                                    >
-                                                        <i
-                                                            class="fas fa-hashtag mr-1.5 text-gray-400"
-                                                        ></i>
-                                                        <span>ID: </span>
-                                                        <span
-                                                            class="ml-1 font-mono text-gray-700"
-                                                            x-text="job.id"
-                                                        ></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div
-                                                class="flex sm:flex-col gap-2 sm:gap-1"
-                                            >
-                                                <button
-                                                    @click="retryJob(job.id)"
-                                                    class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 hover:shadow-md w-full sm:w-auto"
-                                                    title="Retry Job"
-                                                >
-                                                    <i
-                                                        class="fas fa-redo mr-2"
-                                                    ></i>
-                                                    <span
-                                                        class="hidden sm:inline"
-                                                        >Retry</span
-                                                    >
-                                                </button>
-                                                <button
-                                                    @click="deleteJob(job.id)"
-                                                    class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 hover:shadow-md w-full sm:w-auto"
-                                                    title="Delete Job"
-                                                >
-                                                    <i
-                                                        class="fas fa-trash mr-2"
-                                                    ></i>
-                                                    <span
-                                                        class="hidden sm:inline"
-                                                        >Delete</span
-                                                    >
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
+                    
                             </div>
                         </div>
 
