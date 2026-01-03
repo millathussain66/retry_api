@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class CommonService
 {
@@ -33,6 +35,7 @@ class CommonService
 
     public static function pushAPILogInQueue($data)
     {
+
         DB::table('retry_api_queue')->insert([
             'api_id'            => $data['api_id'],
             'api_name'          => self::getApiNameById($data['api_id']),
@@ -42,11 +45,16 @@ class CommonService
             'file_sl_no'        => $data['file_sl_no'],
             'payload'           => json_encode($data['requestPayload']),
             'response'          => json_encode($data['response']),
-            'success_status'    => $data['response'] ? 1 : 0,
+            'success_status'    => $data['response']['responseCode'] == '100' ? 1 : 0,
             'last_attempted_at' => now(),
             'created_at'        => now(),
             'updated_at'        => now(),
         ]);
+
+        if ($data['response']['responseCode'] != '100') {
+            Log::info('API Response Error: ' . json_encode($data['response']));
+            throw new Exception("API failed: Missing customer/card information");
+        }
     }
 
     public static function getApiNameById($apiId)

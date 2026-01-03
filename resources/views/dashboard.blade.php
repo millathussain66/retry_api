@@ -20,7 +20,7 @@
 
                     },
                     error: function(xhr, status, error) {
-                       window.location.reload();
+                    //    window.location.reload();
                     },
                     complete: function() {
                         Swal.fire({
@@ -30,7 +30,7 @@
                             position: 'top-end',
                         });
                         $('#loadingSpinner').hide();
-                        window.location.reload();
+                        // window.location.reload();
                     }
                 });
             });

@@ -328,7 +328,6 @@ class CreditCardService
 
         // throw new Exceptions("API failed: Missing customer/card information");
 
-
         $proceedOne = CreditCardService::beforeCallApi(2, $result['applicant']->lead_id, $result['applicant']->file_info_id, $result['applicant']->candidate_info_id);
 
         // beforeCallApi($apiId, $leadId, $fileInfoId, $candidateInfoId)
